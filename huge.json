@@ -1,0 +1,35 @@
+{
+	"env": {
+		"dimension": [300, 300],
+		"tileSide": 3,
+		"background": [25, 75, 95],
+		"grid": {
+			"visible": false
+		}
+	},
+	"nest": {
+		"visible": true,
+		"location": [150, 150]
+	},
+	"ants": {
+		"visible": true,
+		"count": 500,
+		"memorySpan": 100,
+		"maxPheroConcentration": 1500,
+		"pheroDecrease": 2,
+		"pheroIncreaseRatio": 0.001
+	},
+	"morsels": {
+		"visible": true,
+        "count": 250,
+        "storage": 250
+	},
+	"pheromones": {
+		"colony": {
+			"visible": false
+		},
+		"food": {
+			"visible": true
+		}
+	}
+}
