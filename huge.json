@@ -1,7 +1,7 @@
 {
 	"env": {
 		"dimension": [300, 300],
-		"tileSide": 3,
+		"tileSide": 4,
 		"background": [25, 75, 95],
 		"grid": {
 			"visible": false
@@ -15,7 +15,7 @@
 		"visible": true,
 		"count": 500,
 		"memorySpan": 100,
-		"maxPheroConcentration": 1500,
+		"maxPheroConcentration": 2500,
 		"pheroDecrease": 2,
 		"pheroIncreaseRatio": 0.001
 	},

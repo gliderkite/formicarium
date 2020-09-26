@@ -55,7 +55,7 @@ impl<'e> Ant<'e> {
     pub fn new(
         location: impl Into<Location>,
         context: &'e game::Context,
-    ) -> Self {
+    ) -> Box<Self> {
         let id = context.unique_id();
         let location = location.into();
         // the Ant can only see its immediate surroundings
@@ -66,7 +66,7 @@ impl<'e> Ant<'e> {
         // all the Ants are followers at each step, until decided otherwise
         let state = State::Follower;
 
-        Self {
+        Box::new(Self {
             id,
             location,
             nest_location: location,
@@ -77,7 +77,7 @@ impl<'e> Ant<'e> {
             memory: LocationAwareness::new(context.conf.ant_memory_span()),
             offspring: Offspring::default(),
             context,
-        }
+        })
     }
 
     /// Gets the location of the first neighbor Entity of the given Kind, found

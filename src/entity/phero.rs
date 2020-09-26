@@ -44,16 +44,16 @@ impl<'e> Phero<'e> {
         location: impl Into<Location>,
         concentration: impl Into<Concentration>,
         context: &'e game::Context,
-    ) -> Self {
+    ) -> Box<Self> {
         let id = context.unique_id();
         let concentration = concentration.into();
-        Self {
+        Box::new(Self {
             id,
             scent,
             location: location.into(),
             lifespan: Lifespan::with_span(concentration),
             context,
-        }
+        })
     }
 }
 

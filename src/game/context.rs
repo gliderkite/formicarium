@@ -1,8 +1,8 @@
 use anyhow::Result;
 use ggez::graphics;
 use semeion::*;
-use std::cell::Cell;
 use std::collections::HashMap;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 use super::conf::Conf;
 use crate::entity::{ant, grid, morsel, nest, phero, Kind};
@@ -13,7 +13,7 @@ pub struct Context {
     // The environment contextual information
     pub conf: Conf,
     // The next available entity ID.
-    id: Cell<entity::Id>,
+    id: AtomicUsize,
     // The map of entities meshes depending on their kind.
     meshes: HashMap<Kind, graphics::Mesh>,
 }
@@ -23,7 +23,7 @@ impl Context {
     pub fn new(conf: Conf) -> Self {
         Self {
             conf,
-            id: Cell::default(),
+            id: AtomicUsize::default(),
             meshes: HashMap::default(),
         }
     }
@@ -57,9 +57,7 @@ impl Context {
     /// around 300 million years before we run out of ID if we keep generating a
     /// new ID every millisecond on a 64 bit target.
     pub fn unique_id(&self) -> entity::Id {
-        let next = self.id.get();
-        self.id.set(next.wrapping_add(1));
-        next
+        self.id.fetch_add(1, Ordering::SeqCst)
     }
 
     /// Gets the graphics mesh associated with the given entity kind.

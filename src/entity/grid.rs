@@ -11,9 +11,9 @@ pub struct Grid<'e> {
 
 impl<'e> Grid<'e> {
     /// Constructs a new Grid.
-    pub fn new(context: &'e game::Context) -> Self {
+    pub fn new(context: &'e game::Context) -> Box<Self> {
         let id = context.unique_id();
-        Self { id, context }
+        Box::new(Self { id, context })
     }
 }
 

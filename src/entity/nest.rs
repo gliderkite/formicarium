@@ -35,16 +35,16 @@ impl<'e> Nest<'e> {
     pub fn new(
         location: impl Into<Location>,
         context: &'e game::Context,
-    ) -> Self {
+    ) -> Box<Self> {
         let id = context.unique_id();
         // the storage of food is initially empty
         let state = State::default();
-        Self {
+        Box::new(Self {
             id,
             location: location.into(),
             context,
             state,
-        }
+        })
     }
 }
 
