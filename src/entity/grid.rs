@@ -61,16 +61,17 @@ pub fn mesh(
     let size = conf.size();
     let stroke_width = 2.0;
     let color = graphics::BLACK;
+    let dimension: Dimension = conf.env.dimension.into();
 
     // horizontal lines
-    for i in 0..=conf.env_dimension().y {
-        let y = i as f32 * conf.side();
+    for i in 0..=dimension.y {
+        let y = i as f32 * conf.env.tile_side;
         let points = [Point2::new(0.0, y), Point2::new(size.width, y)];
         mesh.line(&points, stroke_width, color)?;
     }
     // vertical lines
-    for i in 0..=conf.env_dimension().x {
-        let x = i as f32 * conf.side();
+    for i in 0..=dimension.x {
+        let x = i as f32 * conf.env.tile_side;
         let points = [Point2::new(x, 0.0), Point2::new(x, size.height)];
         mesh.line(&points, stroke_width, color)?;
     }

@@ -1,116 +1,147 @@
 use anyhow::Result;
-use ggez::graphics::Color;
-use semeion::{Dimension, Location, Size};
+use semeion::Size;
 use serde::{Deserialize, Serialize};
 use std::{fs, path::Path};
 
 use crate::entity::{phero, Kind};
 
 /// The game configuration.
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Conf {
-    fps: Option<u32>,
-    env: Environment,
-    nest: Nest,
-    ants: Ants,
-    morsels: Morsels,
-    pheromones: Pheromones,
-}
-
-#[derive(Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct Environment {
-    dimension: (i32, i32),
-    tile_side: f32,
-    background: (u8, u8, u8),
-    grid: Grid,
-}
-
-#[derive(Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct Nest {
-    visible: bool,
-    location: (i32, i32),
-}
-
-#[derive(Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct Ants {
-    visible: bool,
-    count: usize,
-    memory_span: usize,
-    max_phero_concentration: u16,
-    phero_decrease: u16,
-    phero_increase_ratio: f64,
-}
-
-#[derive(Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct Morsels {
-    visible: bool,
-    count: usize,
-    storage: u64,
-}
-
-#[derive(Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct Pheromones {
-    colony: ColonyPhero,
-    food: FoodPhero,
-}
-
-#[derive(Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct ColonyPhero {
-    visible: bool,
-}
-
-#[derive(Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct FoodPhero {
-    visible: bool,
-}
-
-#[derive(Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct Grid {
-    visible: bool,
+    pub fps: Option<u32>,
+    pub seed: Option<u64>,
+    pub env: Environment,
+    pub nest: Nest,
+    pub ants: Ants,
+    pub morsels: Morsels,
+    pub pheromones: Pheromones,
 }
 
 impl Default for Conf {
     fn default() -> Self {
         Self {
             fps: Some(24),
-            env: Environment {
-                dimension: (30, 30),
-                tile_side: 25.0,
-                background: (25, 75, 75),
-                grid: Grid { visible: false },
-            },
-            nest: Nest {
-                visible: true,
-                location: (25, 25),
-            },
-            ants: Ants {
-                visible: true,
-                count: 10,
-                memory_span: 30,
-                max_phero_concentration: 200,
-                phero_decrease: 2,
-                phero_increase_ratio: 0.1,
-            },
-            morsels: Morsels {
-                visible: true,
-                count: 20,
-                storage: 30,
-            },
-            pheromones: Pheromones {
-                colony: ColonyPhero { visible: false },
-                food: FoodPhero { visible: false },
-            },
+            seed: Some(0),
+            env: Environment::default(),
+            nest: Nest::default(),
+            ants: Ants::default(),
+            morsels: Morsels::default(),
+            pheromones: Pheromones::default(),
         }
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Environment {
+    pub dimension: (i32, i32),
+    pub tile_side: f32,
+    pub background: (u8, u8, u8),
+    pub grid: Grid,
+}
+
+impl Default for Environment {
+    fn default() -> Self {
+        Self {
+            dimension: (30, 30),
+            tile_side: 25.0,
+            background: (25, 75, 75),
+            grid: Grid { visible: false },
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Nest {
+    pub visible: bool,
+    pub location: (i32, i32),
+}
+
+impl Default for Nest {
+    fn default() -> Self {
+        Self {
+            visible: true,
+            location: (25, 25),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Ants {
+    pub visible: bool,
+    pub count: usize,
+    pub memory_span: usize,
+    pub max_phero_concentration: u16,
+    pub phero_decrease: u16,
+    pub phero_increase_ratio: f64,
+}
+
+impl Default for Ants {
+    fn default() -> Self {
+        Self {
+            visible: true,
+            count: 10,
+            memory_span: 30,
+            max_phero_concentration: 200,
+            phero_decrease: 2,
+            phero_increase_ratio: 0.1,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Morsels {
+    pub visible: bool,
+    pub count: usize,
+    pub storage: u64,
+}
+
+impl Default for Morsels {
+    fn default() -> Self {
+        Self {
+            visible: true,
+            count: 20,
+            storage: 30,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Pheromones {
+    pub colony: ColonyPhero,
+    pub food: FoodPhero,
+}
+
+impl Default for Pheromones {
+    fn default() -> Self {
+        Self {
+            colony: ColonyPhero { visible: false },
+            food: FoodPhero { visible: false },
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ColonyPhero {
+    pub visible: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FoodPhero {
+    pub visible: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Grid {
+    pub visible: bool,
 }
 
 impl Conf {
@@ -121,26 +152,6 @@ impl Conf {
         let contents = fs::read_to_string(config_path)?;
         let conf = serde_json::from_str(&contents)?;
         Ok(conf)
-    }
-
-    /// Gets the target fps.
-    pub fn fps(&self) -> Option<u32> {
-        self.fps
-    }
-
-    /// Gets the background color.
-    pub fn background_color(&self) -> Color {
-        self.env.background.into()
-    }
-
-    /// Gets the dimension of the environment.
-    pub fn env_dimension(&self) -> Dimension {
-        self.env.dimension.into()
-    }
-
-    /// Gets the side length of each tile in the environment.
-    pub fn side(&self) -> f32 {
-        self.env.tile_side
     }
 
     /// Gets the size of the environment in number of pixels.
@@ -173,41 +184,8 @@ impl Conf {
         }
     }
 
-    /// Gets initial the food storage of each morsel.
-    pub fn morsel_storage(&self) -> u64 {
-        self.morsels.storage
-    }
-
     /// Gets the total food initially located in the environment.
     pub fn total_storage(&self) -> u64 {
         self.morsels.storage * self.morsels.count as u64
-    }
-
-    /// Gets the nest location.
-    pub fn nest_location(&self) -> Location {
-        self.nest.location.into()
-    }
-
-    /// Gets the maximum concentration level of pheromone that can be released
-    /// by an Ant.
-    pub fn ant_max_phero_concentration(&self) -> phero::Concentration {
-        self.ants.max_phero_concentration.into()
-    }
-
-    /// Gets the value that is subtracted to the Ant pheromone concentration at
-    /// each generation.
-    pub fn ant_phero_decrease(&self) -> u16 {
-        self.ants.phero_decrease
-    }
-
-    /// Gets the value in percentage that is used to increase the pheromone found,
-    /// when equal to the pheromone the Ant is supposed to leave when foraging.
-    pub fn ant_phero_inc_ratio(&self) -> f64 {
-        self.ants.phero_increase_ratio
-    }
-
-    /// Gets the ants memory span.
-    pub fn ant_memory_span(&self) -> usize {
-        self.ants.memory_span
     }
 }

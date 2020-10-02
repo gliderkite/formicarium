@@ -62,8 +62,9 @@ impl<'e> Entity<'e> for Morsel<'e> {
         }
 
         // shift the center of the Rect to the center of the Tile
-        let env_side = self.context.conf.side();
-        let entity_size = entity::size(self.kind(), self.context.conf.side());
+        let env_side = self.context.conf.env.tile_side;
+        let entity_size =
+            entity::size(self.kind(), self.context.conf.env.tile_side);
         let center_offset = entity_size / 2.0 - env_side / 2.0;
         let loc = self.location.to_pixel_coords(env_side) - center_offset;
         // translate according to the current entity location
@@ -71,7 +72,7 @@ impl<'e> Entity<'e> for Morsel<'e> {
 
         // scale according to a value proportional to the remaining lifespan
         let lifespan = self.lifespan.length().unwrap_or(0) as f32;
-        let max_concentration = self.context.conf.morsel_storage() as f32;
+        let max_concentration = self.context.conf.morsels.storage as f32;
         let scale = (lifespan / max_concentration).min(1.0);
         let scale = Transform::scale_around(
             [scale, scale],
@@ -99,7 +100,7 @@ pub fn mesh(
 ) -> ggez::GameResult<graphics::Mesh> {
     let mut mesh = graphics::MeshBuilder::new();
     let color = graphics::Color::new(0.3, 0.5, 0.0, 1.0);
-    let entity_size = entity::size(entity::Kind::Morsel, conf.side());
+    let entity_size = entity::size(entity::Kind::Morsel, conf.env.tile_side);
 
     let outer = graphics::Rect::new(0.0, 0.0, entity_size, entity_size);
     mesh.rectangle(graphics::DrawMode::stroke(1.0), outer, color);

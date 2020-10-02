@@ -102,8 +102,8 @@ impl<'e> Entity<'e> for Phero<'e> {
         }
 
         // shift the center of the mesh to the center of the Tile
-        let env_side = self.context.conf.side();
-        let entity_size = entity::size(self.kind(), self.context.conf.side());
+        let env_side = self.context.conf.env.tile_side;
+        let entity_size = entity::size(self.kind(), env_side);
         let center_offset = entity_size / 2.0 - env_side / 2.0;
         let loc = self.location.to_pixel_coords(env_side) - center_offset;
         let translation = Transform::translate(loc);
@@ -112,7 +112,7 @@ impl<'e> Entity<'e> for Phero<'e> {
         // that represents the concentration left
         let lifespan = self.lifespan.length().unwrap_or(0) as f32;
         let max_concentration =
-            self.context.conf.ant_max_phero_concentration().value() as f32;
+            self.context.conf.ants.max_phero_concentration as f32;
         let scale = (lifespan / max_concentration).min(0.5);
         let scale = Transform::scale_around(
             [scale, scale],
@@ -172,7 +172,7 @@ pub fn mesh(
 ) -> ggez::GameResult<graphics::Mesh> {
     let color = graphics::WHITE;
     let entity_size =
-        entity::size(entity::Kind::phero_with(scent), conf.side());
+        entity::size(entity::Kind::phero_with(scent), conf.env.tile_side);
     let tolerance = 0.5;
     let radius = entity_size / 2.0;
     let center = [radius, radius];

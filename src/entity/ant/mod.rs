@@ -62,7 +62,8 @@ impl<'e> Ant<'e> {
         let scope = Scope::with_magnitude(1);
         // the phero concentration strength left by the Ant is proportional
         // to the distance from the source (Nest/Morsel)
-        let phero_concentration = context.conf.ant_max_phero_concentration();
+        let phero_concentration =
+            context.conf.ants.max_phero_concentration.into();
         // all the Ants are followers at each step, until decided otherwise
         let state = State::Follower;
 
@@ -74,7 +75,7 @@ impl<'e> Ant<'e> {
             activity: Activity::Foraging,
             state,
             phero_concentration,
-            memory: LocationAwareness::new(context.conf.ant_memory_span()),
+            memory: LocationAwareness::new(context.conf.ants.memory_span),
             offspring: Offspring::default(),
             context,
         })
@@ -155,7 +156,7 @@ impl<'e> Ant<'e> {
         if let Some(dest) = dest {
             // follow the scent of the target pheromone
             self.location
-                .translate_towards(dest, self.context.conf.env_dimension());
+                .translate_towards(dest, self.context.conf.env.dimension);
         } else if self.activity == Activity::Carrying
             || self.is_lost(neighborhood)
         {
@@ -190,7 +191,7 @@ impl<'e> Ant<'e> {
         debug_assert!(!offsets.is_empty());
         offsets.shuffle(&mut rng);
 
-        let env_dimension = self.context.conf.env_dimension();
+        let env_dimension = self.context.conf.env.dimension;
         let dest = *self
             .nest_location
             .clone()
@@ -226,7 +227,7 @@ impl<'e> Ant<'e> {
             });
 
         self.location
-            .translate(offset, self.context.conf.env_dimension());
+            .translate(offset, self.context.conf.env.dimension);
     }
 
     /// Leaves the pheromone according to the Ant activity and location.
@@ -237,7 +238,7 @@ impl<'e> Ant<'e> {
         // decrease the concentration of pheromone the Ant can leave at each
         // generation
         self.phero_concentration
-            .decrease_by(self.context.conf.ant_phero_decrease());
+            .decrease_by(self.context.conf.ants.phero_decrease);
 
         // check if this tile contains a pheromone entity of the same kind the
         // Ant is going to leave according to its activity
@@ -258,7 +259,7 @@ impl<'e> Ant<'e> {
             if self.activity.scent() == phero::Scent::Colony {
                 // reinforce the path that leads to the colony nest
                 increase += (length as f64
-                    * self.context.conf.ant_phero_inc_ratio())
+                    * self.context.conf.ants.phero_increase_ratio)
                     as u64;
             }
             lifespan.lengthen_by(increase);
@@ -405,7 +406,7 @@ impl<'e> Ant<'e> {
 
                 // reset the pheromone concentration
                 self.phero_concentration =
-                    self.context.conf.ant_max_phero_concentration();
+                    self.context.conf.ants.max_phero_concentration.into();
             }
         }
     }
@@ -470,8 +471,9 @@ impl<'e> Entity<'e> for Ant<'e> {
         }
 
         // shift the center of the mesh to the center of the Tile
-        let env_side = self.context.conf.side();
-        let entity_size = entity::size(self.kind(), self.context.conf.side());
+        let env_side = self.context.conf.env.tile_side;
+        let entity_size =
+            entity::size(self.kind(), self.context.conf.env.tile_side);
         let center_offset = entity_size / 2.0 - env_side / 2.0;
         let loc = self.location.to_pixel_coords(env_side) - center_offset;
         // translate according to the current entity location
@@ -550,7 +552,7 @@ pub fn mesh(
     conf: &game::Conf,
 ) -> ggez::GameResult<graphics::Mesh> {
     let color = graphics::WHITE;
-    let entity_size = entity::size(entity::Kind::Ant, conf.side());
+    let entity_size = entity::size(entity::Kind::Ant, conf.env.tile_side);
     let tolerance = 2.0;
     let radius = entity_size / 2.0;
     let center = [radius, radius];

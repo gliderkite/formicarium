@@ -1,5 +1,5 @@
 use ggez::{event, graphics, nalgebra, timer};
-use rand::Rng;
+use rand::{rngs::StdRng, Rng, SeedableRng};
 use semeion::*;
 use std::process;
 
@@ -17,19 +17,19 @@ impl<'e> State<'e> {
     /// Constructs the game state by populating the environment with the initial
     /// entities.
     pub fn new(context: &'e game::Context) -> ggez::GameResult<Self> {
-        let mut env = Environment::new(context.conf.env_dimension());
-        debug_assert_eq!(env.dimension(), context.conf.env_dimension());
+        let mut env = Environment::new(context.conf.env.dimension);
+        debug_assert_eq!(env.dimension(), context.conf.env.dimension.into());
 
         // populate the environment
         env.insert(entity::Grid::new(context));
-        let nest_location = context.conf.nest_location();
+        let nest_location = context.conf.nest.location;
         env.insert(entity::Nest::new(nest_location, context));
 
         for _ in 0..context.conf.count(entity::Kind::Ant) {
             env.insert(entity::Ant::new(nest_location, context));
         }
 
-        let mut rng = rand::thread_rng();
+        let mut rng = StdRng::seed_from_u64(context.conf.seed.unwrap_or(0));
         for _ in 0..context.conf.count(entity::Kind::Morsel) {
             let location = (
                 rng.gen_range(0, env.dimension().x),
@@ -37,7 +37,7 @@ impl<'e> State<'e> {
             );
             env.insert(entity::Morsel::new(
                 location,
-                Lifespan::with_span(context.conf.morsel_storage()),
+                Lifespan::with_span(context.conf.morsels.storage),
                 context,
             ));
         }
@@ -86,7 +86,7 @@ impl<'e> event::EventHandler for State<'e> {
     /// Updates the game state by moving the environment forward to the next
     /// generation.
     fn update(&mut self, ctx: &mut ggez::Context) -> ggez::GameResult {
-        let target_fps = self.context.conf.fps();
+        let target_fps = self.context.conf.fps;
         let mut step = || {
             self.env
                 .nextgen()
@@ -114,7 +114,7 @@ impl<'e> event::EventHandler for State<'e> {
 
     /// Draws the environment with all its entities.
     fn draw(&mut self, ctx: &mut ggez::Context) -> ggez::GameResult {
-        graphics::clear(ctx, self.context.conf.background_color());
+        graphics::clear(ctx, self.context.conf.env.background.into());
 
         self.env
             .draw(ctx, Transform::identity())
