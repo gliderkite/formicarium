@@ -19,15 +19,18 @@ fn run_simulation() {
         while !state.is_simulation_over() {
             let generation = state.env.nextgen().unwrap();
             if generation > MAX_GENERATIONS_COUNT {
-                eprint!("Timeout with {} ants!", count);
-                continue;
+                break;
             }
         }
 
-        println!(
-            "Simulation over after {} generations with {} ants",
-            state.env.generation(),
-            count
-        );
+        if state.env.generation() > MAX_GENERATIONS_COUNT {
+            eprintln!("Timeout with {} ants!", count);
+        } else {
+            println!(
+                "Simulation over after {} generations with {} ants",
+                state.env.generation(),
+                count
+            );
+        }
     }
 }
