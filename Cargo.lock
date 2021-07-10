@@ -2142,7 +2142,7 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 [[package]]
 name = "semeion"
 version = "0.9.0"
-source = "git+https://github.com/gliderkite/semeion?branch=exp#a4bf5ee583874a59f412319f41f9cf9611bfa712"
+source = "git+https://github.com/gliderkite/semeion?branch=exp#3b4f8db7959d52912b7aad34d0c70ff4d2cd4494"
 dependencies = [
  "rayon",
 ]
