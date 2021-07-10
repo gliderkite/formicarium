@@ -1,22 +1,23 @@
 use ggez::graphics;
 use semeion::*;
+use std::sync::Arc;
 
 use crate::{entity, game};
 
 /// A static morsel.
-pub struct Morsel<'e> {
+pub struct Morsel {
     id: entity::Id,
     location: Location,
     lifespan: Lifespan,
-    context: &'e game::Context,
+    context: Arc<game::Context>,
 }
 
-impl<'e> Morsel<'e> {
+impl Morsel {
     /// Constructs a new Morsel.
     pub fn new(
         location: impl Into<Location>,
         lifespan: impl Into<Lifespan>,
-        context: &'e game::Context,
+        context: Arc<game::Context>,
     ) -> Box<Self> {
         let id = context.unique_id();
         Box::new(Self {
@@ -28,7 +29,7 @@ impl<'e> Morsel<'e> {
     }
 }
 
-impl<'e> Entity<'e> for Morsel<'e> {
+impl<'e> Entity<'e> for Morsel {
     type Kind = entity::Kind;
     type Context = ggez::Context;
 
@@ -81,15 +82,14 @@ impl<'e> Entity<'e> for Morsel<'e> {
 
         transform *= translation * scale;
 
-        graphics::push_transform(ctx, Some(transform.to_column_matrix4()));
-        graphics::apply_transformations(ctx).map_err(Error::with_message)?;
-
         let mesh = self.context.kind_mesh(&self.kind());
-        graphics::draw(ctx, mesh, graphics::DrawParam::default())
-            .map_err(Error::with_message)?;
-
-        graphics::pop_transform(ctx);
-        graphics::apply_transformations(ctx).map_err(Error::with_message)
+        graphics::draw(
+            ctx,
+            mesh,
+            graphics::DrawParam::default()
+                .transform(transform.to_column_matrix4()),
+        )
+        .map_err(Error::with_message)
     }
 }
 
@@ -103,7 +103,7 @@ pub fn mesh(
     let entity_size = entity::size(entity::Kind::Morsel, conf.env.tile_side);
 
     let outer = graphics::Rect::new(0.0, 0.0, entity_size, entity_size);
-    mesh.rectangle(graphics::DrawMode::stroke(1.0), outer, color);
+    mesh.rectangle(graphics::DrawMode::stroke(1.0), outer, color)?;
 
     let half_size = entity_size / 2.0;
     let inner = graphics::Rect::new(
@@ -112,7 +112,7 @@ pub fn mesh(
         half_size,
         half_size,
     );
-    mesh.rectangle(graphics::DrawMode::fill(), inner, color);
+    mesh.rectangle(graphics::DrawMode::fill(), inner, color)?;
 
     mesh.build(ctx)
 }

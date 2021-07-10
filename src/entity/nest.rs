@@ -1,6 +1,6 @@
 use ggez::graphics;
 use semeion::*;
-use std::any::Any;
+use std::{any::Any, sync::Arc};
 
 use crate::{entity, game};
 
@@ -23,18 +23,18 @@ impl entity::State for State {
 }
 
 /// A static nest.
-pub struct Nest<'e> {
+pub struct Nest {
     id: entity::Id,
     location: Location,
-    context: &'e game::Context,
+    context: Arc<game::Context>,
     state: State,
 }
 
-impl<'e> Nest<'e> {
+impl Nest {
     /// Constructs a new Nest.
     pub fn new(
         location: impl Into<Location>,
-        context: &'e game::Context,
+        context: Arc<game::Context>,
     ) -> Box<Self> {
         let id = context.unique_id();
         // the storage of food is initially empty
@@ -48,7 +48,7 @@ impl<'e> Nest<'e> {
     }
 }
 
-impl<'e> Entity<'e> for Nest<'e> {
+impl<'e> Entity<'e> for Nest {
     type Kind = entity::Kind;
     type Context = ggez::Context;
 
@@ -92,15 +92,14 @@ impl<'e> Entity<'e> for Nest<'e> {
 
         transform *= translation;
 
-        graphics::push_transform(ctx, Some(transform.to_column_matrix4()));
-        graphics::apply_transformations(ctx).map_err(Error::with_message)?;
-
         let mesh = self.context.kind_mesh(&self.kind());
-        graphics::draw(ctx, mesh, graphics::DrawParam::default())
-            .map_err(Error::with_message)?;
-
-        graphics::pop_transform(ctx);
-        graphics::apply_transformations(ctx).map_err(Error::with_message)
+        graphics::draw(
+            ctx,
+            mesh,
+            graphics::DrawParam::default()
+                .transform(transform.to_column_matrix4()),
+        )
+        .map_err(Error::with_message)
     }
 }
 
@@ -126,7 +125,7 @@ pub fn mesh(
 
     let entity_size = entity::size(entity::Kind::Nest, conf.env.tile_side);
     let outer = graphics::Rect::new(0.0, 0.0, entity_size, entity_size);
-    mesh.rectangle(graphics::DrawMode::stroke(3.0), outer, color);
+    mesh.rectangle(graphics::DrawMode::stroke(3.0), outer, color)?;
 
     let half_size = entity_size / 2.0;
     let inner = graphics::Rect::new(
@@ -135,7 +134,7 @@ pub fn mesh(
         half_size,
         half_size,
     );
-    mesh.rectangle(graphics::DrawMode::fill(), inner, color);
+    mesh.rectangle(graphics::DrawMode::fill(), inner, color)?;
 
     mesh.build(ctx)
 }

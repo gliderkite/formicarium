@@ -15,4 +15,11 @@ environment.
 For a complete overview of this project, please have a look at the
 [formicarium blog post](https://gliderkite.github.io/posts/formicarium).
 
+
+You can run the simulation with:
+
+```console
+cargo run --release -- <configuration.json>
+```
+
 <img src="preview.png" width="750" height="600">

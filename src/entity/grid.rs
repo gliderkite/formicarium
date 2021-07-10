@@ -1,23 +1,24 @@
 use ggez::graphics;
 use semeion::*;
+use std::sync::Arc;
 
 use crate::{entity, game};
 
 /// A static grid of squared cells.
-pub struct Grid<'e> {
+pub struct Grid {
     id: entity::Id,
-    context: &'e game::Context,
+    context: Arc<game::Context>,
 }
 
-impl<'e> Grid<'e> {
+impl Grid {
     /// Constructs a new Grid.
-    pub fn new(context: &'e game::Context) -> Box<Self> {
+    pub fn new(context: Arc<game::Context>) -> Box<Self> {
         let id = context.unique_id();
         Box::new(Self { id, context })
     }
 }
 
-impl<'e> Entity<'e> for Grid<'e> {
+impl<'e> Entity<'e> for Grid {
     type Kind = entity::Kind;
     type Context = ggez::Context;
 
@@ -38,15 +39,14 @@ impl<'e> Entity<'e> for Grid<'e> {
             return Ok(());
         }
 
-        graphics::push_transform(ctx, Some(transform.to_column_matrix4()));
-        graphics::apply_transformations(ctx).map_err(Error::with_message)?;
-
         let mesh = self.context.kind_mesh(&self.kind());
-        graphics::draw(ctx, mesh, graphics::DrawParam::default())
-            .map_err(Error::with_message)?;
-
-        graphics::pop_transform(ctx);
-        graphics::apply_transformations(ctx).map_err(Error::with_message)
+        graphics::draw(
+            ctx,
+            mesh,
+            graphics::DrawParam::default()
+                .transform(transform.to_column_matrix4()),
+        )
+        .map_err(Error::with_message)
     }
 }
 
@@ -55,24 +55,24 @@ pub fn mesh(
     ctx: &mut ggez::Context,
     conf: &game::Conf,
 ) -> ggez::GameResult<graphics::Mesh> {
-    use ggez::nalgebra::Point2;
+    use ggez::mint::Point2;
 
     let mut mesh = graphics::MeshBuilder::new();
     let size = conf.size();
     let stroke_width = 2.0;
-    let color = graphics::BLACK;
+    let color = graphics::Color::BLACK;
     let dimension: Dimension = conf.env.dimension.into();
 
     // horizontal lines
     for i in 0..=dimension.y {
         let y = i as f32 * conf.env.tile_side;
-        let points = [Point2::new(0.0, y), Point2::new(size.width, y)];
+        let points = [Point2 { x: 0.0, y }, Point2 { x: size.width, y }];
         mesh.line(&points, stroke_width, color)?;
     }
     // vertical lines
     for i in 0..=dimension.x {
         let x = i as f32 * conf.env.tile_side;
-        let points = [Point2::new(x, 0.0), Point2::new(x, size.height)];
+        let points = [Point2 { x, y: 0.0 }, Point2 { x, y: size.height }];
         mesh.line(&points, stroke_width, color)?;
     }
 

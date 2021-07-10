@@ -1,7 +1,7 @@
 use ggez::graphics;
 use rand::{seq::SliceRandom, Rng};
 use semeion::*;
-use std::any::Any;
+use std::{any::Any, sync::Arc};
 
 use crate::entity::phero;
 use crate::{entity, game};
@@ -47,14 +47,14 @@ pub struct Ant<'e> {
     phero_concentration: phero::Concentration,
     memory: LocationAwareness,
     offspring: Offspring<'e, entity::Kind, ggez::Context>,
-    context: &'e game::Context,
+    context: Arc<game::Context>,
 }
 
 impl<'e> Ant<'e> {
     /// Constructs a new Ant located in its Nest when born.
     pub fn new(
         location: impl Into<Location>,
-        context: &'e game::Context,
+        context: Arc<game::Context>,
     ) -> Box<Self> {
         let id = context.unique_id();
         let location = location.into();
@@ -176,7 +176,7 @@ impl<'e> Ant<'e> {
             && !neighborhood
                 .center()
                 .entities()
-                .any(|e| matches!(e.kind(), entity::Kind::Phero { ..}))
+                .any(|e| matches!(e.kind(), entity::Kind::Phero { .. }))
     }
 
     /// Moves towards the nest independently of anything else, with a certain
@@ -187,7 +187,7 @@ impl<'e> Ant<'e> {
             .location
             .distance(self.nest_location, Distance::Manhattan);
         debug_assert!(dist > 0);
-        let mut offsets = Offset::border(rng.gen_range(0, dist));
+        let mut offsets = Offset::border(rng.gen_range(0..dist));
         debug_assert!(!offsets.is_empty());
         offsets.shuffle(&mut rng);
 
@@ -223,7 +223,7 @@ impl<'e> Ant<'e> {
             })
             // if all the surrounding tiles cannot be avoided choose one randomly
             .unwrap_or_else(|| {
-                (rng.gen_range(-1, 2), rng.gen_range(-1, 2)).into()
+                (rng.gen_range(-1..2), rng.gen_range(-1..2)).into()
             });
 
         self.location
@@ -302,7 +302,7 @@ impl<'e> Ant<'e> {
                     self.activity.scent(),
                     self.location,
                     self.phero_concentration,
-                    self.context,
+                    Arc::clone(&self.context),
                 ));
             }
         }
@@ -479,9 +479,6 @@ impl<'e> Entity<'e> for Ant<'e> {
         // translate according to the current entity location
         transform *= Transform::translate(loc);
 
-        graphics::push_transform(ctx, Some(transform.to_column_matrix4()));
-        graphics::apply_transformations(ctx).map_err(Error::with_message)?;
-
         let mesh = self.context.kind_mesh(&self.kind());
         let color = match self.activity {
             Activity::Foraging => [1.0, 0.0, 0.0, 1.0],
@@ -491,12 +488,11 @@ impl<'e> Entity<'e> for Ant<'e> {
         graphics::draw(
             ctx,
             mesh,
-            graphics::DrawParam::default().color(color.into()),
+            graphics::DrawParam::default()
+                .color(color.into())
+                .transform(transform.to_column_matrix4()),
         )
-        .map_err(Error::with_message)?;
-
-        graphics::pop_transform(ctx);
-        graphics::apply_transformations(ctx).map_err(Error::with_message)
+        .map_err(Error::with_message)
     }
 }
 
@@ -551,13 +547,13 @@ pub fn mesh(
     ctx: &mut ggez::Context,
     conf: &game::Conf,
 ) -> ggez::GameResult<graphics::Mesh> {
-    let color = graphics::WHITE;
+    let color = graphics::Color::WHITE;
     let entity_size = entity::size(entity::Kind::Ant, conf.env.tile_side);
     let tolerance = 2.0;
     let radius = entity_size / 2.0;
     let center = [radius, radius];
 
     let mut mesh = graphics::MeshBuilder::new();
-    mesh.circle(graphics::DrawMode::fill(), center, radius, tolerance, color);
+    mesh.circle(graphics::DrawMode::fill(), center, radius, tolerance, color)?;
     mesh.build(ctx)
 }
