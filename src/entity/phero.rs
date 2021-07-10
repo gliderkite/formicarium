@@ -45,16 +45,16 @@ impl Phero {
         location: impl Into<Location>,
         concentration: impl Into<Concentration>,
         context: Arc<game::Context>,
-    ) -> Box<Self> {
+    ) -> Self {
         let id = context.unique_id();
         let concentration = concentration.into();
-        Box::new(Self {
+        Self {
             id,
             scent,
             location: location.into(),
             lifespan: Lifespan::with_span(concentration),
             context,
-        })
+        }
     }
 }
 

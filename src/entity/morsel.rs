@@ -18,14 +18,14 @@ impl Morsel {
         location: impl Into<Location>,
         lifespan: impl Into<Lifespan>,
         context: Arc<game::Context>,
-    ) -> Box<Self> {
+    ) -> Self {
         let id = context.unique_id();
-        Box::new(Self {
+        Self {
             id,
             location: location.into(),
             lifespan: lifespan.into(),
             context,
-        })
+        }
     }
 }
 

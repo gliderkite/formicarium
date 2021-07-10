@@ -2141,9 +2141,8 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "semeion"
-version = "0.8.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ebd2c92daf3dd2982a64444253d7729de4817ebcfc426cbd50c4df7ba42c39e4"
+version = "0.9.0"
+source = "git+https://github.com/gliderkite/semeion?branch=exp#a4bf5ee583874a59f412319f41f9cf9611bfa712"
 dependencies = [
  "rayon",
 ]

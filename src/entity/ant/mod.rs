@@ -55,7 +55,7 @@ impl<'e> Ant<'e> {
     pub fn new(
         location: impl Into<Location>,
         context: Arc<game::Context>,
-    ) -> Box<Self> {
+    ) -> Self {
         let id = context.unique_id();
         let location = location.into();
         // the Ant can only see its immediate surroundings
@@ -67,7 +67,7 @@ impl<'e> Ant<'e> {
         // all the Ants are followers at each step, until decided otherwise
         let state = State::Follower;
 
-        Box::new(Self {
+        Self {
             id,
             location,
             nest_location: location,
@@ -78,7 +78,7 @@ impl<'e> Ant<'e> {
             memory: LocationAwareness::new(context.conf.ants.memory_span),
             offspring: Offspring::default(),
             context,
-        })
+        }
     }
 
     /// Gets the location of the first neighbor Entity of the given Kind, found
@@ -535,7 +535,7 @@ impl Activity {
 fn get_overlapping_kind_mut<'n, 'e>(
     kind: entity::Kind,
     neighborhood: &'n mut Neighborhood<'_, 'e, entity::Kind, ggez::Context>,
-) -> Option<&'n mut entity::Trait<'e, entity::Kind, ggez::Context>> {
+) -> Option<&'n mut entity::EntityTrait<'e, entity::Kind, ggez::Context>> {
     neighborhood
         .center_mut()
         .entities_mut()

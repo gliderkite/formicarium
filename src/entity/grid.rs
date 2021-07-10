@@ -12,9 +12,9 @@ pub struct Grid {
 
 impl Grid {
     /// Constructs a new Grid.
-    pub fn new(context: Arc<game::Context>) -> Box<Self> {
+    pub fn new(context: Arc<game::Context>) -> Self {
         let id = context.unique_id();
-        Box::new(Self { id, context })
+        Self { id, context }
     }
 }
 
