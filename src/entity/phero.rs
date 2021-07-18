@@ -1,6 +1,7 @@
 use ggez::graphics;
 use semeion::*;
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 
 use crate::{entity, game};
 
@@ -29,35 +30,35 @@ pub enum Scent {
 #[derive(Debug, Clone, Copy)]
 pub struct Concentration(u16);
 
-pub struct Phero<'e> {
+pub struct Phero {
     id: entity::Id,
     scent: Scent,
     location: Location,
     lifespan: Lifespan,
-    context: &'e game::Context,
+    context: Arc<game::Context>,
 }
 
-impl<'e> Phero<'e> {
+impl Phero {
     /// Constructs a new Phero Entity.
     pub fn new(
         scent: Scent,
         location: impl Into<Location>,
         concentration: impl Into<Concentration>,
-        context: &'e game::Context,
-    ) -> Box<Self> {
+        context: Arc<game::Context>,
+    ) -> Self {
         let id = context.unique_id();
         let concentration = concentration.into();
-        Box::new(Self {
+        Self {
             id,
             scent,
             location: location.into(),
             lifespan: Lifespan::with_span(concentration),
             context,
-        })
+        }
     }
 }
 
-impl<'e> Entity<'e> for Phero<'e> {
+impl<'e> Entity<'e> for Phero {
     type Kind = entity::Kind;
     type Context = ggez::Context;
 
@@ -121,20 +122,20 @@ impl<'e> Entity<'e> for Phero<'e> {
 
         transform *= translation * scale;
 
-        graphics::push_transform(ctx, Some(transform.to_column_matrix4()));
-        graphics::apply_transformations(ctx).map_err(Error::with_message)?;
-
         // the brighter the entity the more concentration it represents, up to
         // completely white (255, 255, 255)
         let val = (lifespan * 0.1) as u8;
         let color = graphics::Color::from_rgb(val, val, val);
 
         let mesh = self.context.kind_mesh(&self.kind());
-        graphics::draw(ctx, mesh, graphics::DrawParam::default().color(color))
-            .map_err(Error::with_message)?;
-
-        graphics::pop_transform(ctx);
-        graphics::apply_transformations(ctx).map_err(Error::with_message)
+        graphics::draw(
+            ctx,
+            mesh,
+            graphics::DrawParam::default()
+                .color(color)
+                .transform(transform.to_column_matrix4()),
+        )
+        .map_err(Error::with_message)
     }
 }
 
@@ -170,7 +171,7 @@ pub fn mesh(
     ctx: &mut ggez::Context,
     conf: &game::Conf,
 ) -> ggez::GameResult<graphics::Mesh> {
-    let color = graphics::WHITE;
+    let color = graphics::Color::WHITE;
     let entity_size =
         entity::size(entity::Kind::phero_with(scent), conf.env.tile_side);
     let tolerance = 0.5;
@@ -178,6 +179,6 @@ pub fn mesh(
     let center = [radius, radius];
 
     let mut mesh = graphics::MeshBuilder::new();
-    mesh.circle(graphics::DrawMode::fill(), center, radius, tolerance, color);
+    mesh.circle(graphics::DrawMode::fill(), center, radius, tolerance, color)?;
     mesh.build(ctx)
 }

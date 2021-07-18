@@ -1,7 +1,7 @@
 use anyhow::Result;
 use ggez::conf::{WindowMode, WindowSetup};
 use ggez::*;
-use std::env;
+use std::{env, sync::Arc};
 
 mod entity;
 mod game;
@@ -21,15 +21,13 @@ fn main() -> Result<()> {
 
     log::info!("Building game context");
     let (width, height) = conf.size().into();
-    let (ctx, events_loop) = &mut ContextBuilder::new("ants", "Marco Conte")
+    let (mut ctx, events_loop) = ContextBuilder::new("ants", "Marco Conte")
         .window_setup(WindowSetup::default().title("Formicarium!"))
         .window_mode(WindowMode::default().dimensions(width, height))
         .build()?;
 
-    let context = game::Context::with_context(conf, ctx)?;
-    let state = &mut game::State::new(&context)?;
+    let context = game::Context::with_context(conf, &mut ctx)?;
+    let state = game::State::new(Arc::new(context))?;
     log::info!("Running game loop..");
-    event::run(ctx, events_loop, state)?;
-
-    Ok(())
+    event::run(ctx, events_loop, state)
 }

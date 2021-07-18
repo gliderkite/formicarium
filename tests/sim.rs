@@ -1,4 +1,5 @@
 use formicarium::*;
+use std::sync::Arc;
 
 /// Relative path of the configuration file used by these tests.
 const DEFAULT_CONFIG_PATH: &str = "tests/conf.json";
@@ -14,7 +15,7 @@ fn run_simulation() {
         conf.ants.count = count;
 
         let context = game::Context::new(conf.clone());
-        let mut state = game::State::new(&context).unwrap();
+        let mut state = game::State::new(Arc::new(context)).unwrap();
 
         while !state.is_simulation_over() {
             let generation = state.env.nextgen().unwrap();
