@@ -489,8 +489,8 @@ impl<'e> Entity<'e> for Ant<'e> {
             ctx,
             mesh,
             graphics::DrawParam::default()
-                .color(color.into())
-                .transform(transform.to_column_matrix4()),
+                .transform(transform.to_column_matrix4())
+                .color(color.into()),
         )
         .map_err(Error::with_message)
     }
@@ -535,7 +535,7 @@ impl Activity {
 fn get_overlapping_kind_mut<'n, 'e>(
     kind: entity::Kind,
     neighborhood: &'n mut Neighborhood<'_, 'e, entity::Kind, ggez::Context>,
-) -> Option<&'n mut entity::EntityTrait<'e, entity::Kind, ggez::Context>> {
+) -> Option<&'n mut EntityTrait<'e, entity::Kind, ggez::Context>> {
     neighborhood
         .center_mut()
         .entities_mut()
